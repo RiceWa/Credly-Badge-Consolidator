@@ -19,9 +19,14 @@ def build_key(df):
 
 
 # Convert the DataFrame into an in-memory Excel file for the download button.
-def dataframe_to_excel_bytes(df, sheet_name="Sheet1"):
+def dataframe_to_excel_bytes(df, sheet_name="Sheet1", date_processed="N\A"):
     output = BytesIO()
+
+    # Added last updated timestamp to master list Last Updated tab
+    dfUpdated = pd.DataFrame([[date_processed]])
+
     with pd.ExcelWriter(output, engine="openpyxl") as writer:
         df.to_excel(writer, index=False, sheet_name=sheet_name)
+        dfUpdated.to_excel(writer, index=False, sheet_name="Last Updated", header=False)
     output.seek(0)
     return output.getvalue()

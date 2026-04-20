@@ -44,7 +44,7 @@ def render_results():
         st.write("No new rows were added.")
 
     # Prepare the updated master sheet as an Excel download.
-    excel_bytes = dataframe_to_excel_bytes(st.session_state.new_master, sheet_name="Master")
+    excel_bytes = dataframe_to_excel_bytes(st.session_state.new_master, sheet_name="Master", date_processed=st.session_state.date_processed)
 
     st.subheader("Update Log")
     st.text_area(
