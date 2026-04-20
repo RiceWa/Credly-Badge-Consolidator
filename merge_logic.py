@@ -4,6 +4,50 @@ from data_helpers import build_key, normalize_text
 
 REQUIRED_KEY_COLS = ["Badge Name", "Issued to Email"]
 
+# These are the 8 Emerging badges someone needs to finish the Emerging group.
+EMERGING_BADGES = [
+    "Emerging Designer",
+    "Emerging Researcher",
+    "Emerging Inclusive Practitioner",
+    "Emerging Changemaker",
+    "Emerging Digital Navigator",
+    "Emerging Collaborator",
+    "Emerging Reflector",
+    "Emerging Mentor",
+]
+
+# These are the 8 Performing badges someone needs to finish the Performing group.
+PERFORMING_BADGES = [
+    "Performing Designer",
+    "Performing Researcher",
+    "Performing Inclusive Practitioner",
+    "Performing Changemaker",
+    "Performing Digital Navigator",
+    "Performing Collaborator",
+    "Performing Reflector",
+    "Performing Mentor",
+]
+
+# These are the 8 Transforming badges someone needs to finish the Transforming group.
+TRANSFORMING_BADGES = [
+    "Transforming Designer",
+    "Transforming Researcher",
+    "Transforming Inclusive Practitioner",
+    "Transforming Changemaker",
+    "Transforming Digital Navigator",
+    "Transforming Collaborator",
+    "Transforming Reflector",
+    "Transforming Mentor",
+]
+
+# This connects what we want to log to the badges we need to check for.
+BADGE_GROUPS = {
+    "Milestone: Emerging": EMERGING_BADGES,
+    "Milestone: Performing": PERFORMING_BADGES,
+    "Milestone: Transforming": TRANSFORMING_BADGES,
+    "the Micro-Credential": EMERGING_BADGES + PERFORMING_BADGES + TRANSFORMING_BADGES,
+}
+
 
 # Check that both uploaded sheets have the columns needed for duplicate checks.
 def validate_required_columns(master_df, credly_df):
@@ -58,7 +102,7 @@ def process_dataframes(master_df, credly_df):
 
     result = {
         "new_master": new_master,
-        "log_lines": build_log_lines(rows_to_append),
+        "log_lines": build_log_lines(rows_to_append, new_master),
         "duplicates_within_credly": duplicates_within,
         "duplicates_against_master": duplicates_against_master,
         "rows_added": rows_to_append,
@@ -67,22 +111,106 @@ def process_dataframes(master_df, credly_df):
 
 
 # Build a human readable update log for the rows that were added.
-def build_log_lines(rows_to_append):
+def build_log_lines(rows_to_append, new_master):
     if rows_to_append.empty:
-        return ["No new rows were added."]
+        return ["Badges:", "No new rows were added."]
 
-    log_lines = []
+    # Add a header above the list of badges gained.
+    log_lines = ["Badges:"]
     for _, row in rows_to_append.iterrows():
-        first = normalize_text(row.get("Issued to First Name", ""))
-        last = normalize_text(row.get("Issued to Last Name", ""))
+        name = get_recipient_name(row)
         badge = normalize_text(row.get("Badge Name", ""))
-
-        # Fallback to email if the first/last name columns are empty.
-        if not first and not last:
-            name = normalize_text(row.get("Issued to Email", "Unknown User"))
-        else:
-            name = f"{first} {last}".strip()
 
         log_lines.append(f"{name} has gotten the badge: {badge}.")
 
+    # Put the completion check under the normal list of badges gained.
+    log_lines.extend(build_badge_completion_log(rows_to_append, new_master))
     return log_lines
+
+
+def get_recipient_name(row):
+    # Use the person's name in the log when we have it.
+    first = normalize_text(row.get("Issued to First Name", ""))
+    last = normalize_text(row.get("Issued to Last Name", ""))
+
+    # If we do not have their name, use their email instead.
+    if not first and not last:
+        return normalize_text(row.get("Issued to Email", "Unknown User"))
+    return f"{first} {last}".strip()
+
+
+def normalize_badge_set(badges):
+    # Make badge names easier to compare by ignoring capitals and extra spaces.
+    return {normalize_text(badge).lower() for badge in badges}
+
+
+def build_badge_completion_log(rows_to_append, new_master):
+    # Only check people who got at least one new badge in this upload.
+    session_recipients = get_session_recipients(rows_to_append)
+    if not session_recipients:
+        return []
+
+    # Get all badges from the new master sheet, and names from the new rows added.
+    badge_sets_by_email = build_badge_sets_by_email(new_master)
+    names_by_email = build_names_by_email(rows_to_append)
+    completion_lines = []
+
+    for email in session_recipients:
+        earned_badges = badge_sets_by_email.get(email, set())
+        name = names_by_email.get(email, email)
+
+        # If this person has every badge in a group, add that to the log.
+        for completion_label, required_badges in BADGE_GROUPS.items():
+            if normalize_badge_set(required_badges).issubset(earned_badges):
+                completion_lines.append(f"{name} has completed {completion_label}.")
+
+    # Give a no changes made message if nobody achieved a milestone or the micro-credential
+    if not completion_lines:
+        completion_lines.append("No Milestone were achieved for this session's recipients.")
+
+    # Add a blank line so this part is separated from the badges gained list.
+    return ["", "Milestones and Micro-Credentials:"] + completion_lines
+
+
+def get_session_recipients(rows_to_append):
+    # Make a list of people from this upload, without repeating the same email.
+    recipients = []
+    seen = set()
+
+    for email in rows_to_append["Issued to Email"].apply(normalize_text).str.lower():
+        if email and email not in seen:
+            recipients.append(email)
+            seen.add(email)
+
+    return recipients
+
+
+def build_badge_sets_by_email(new_master):
+    # Make a list of every badge each person has in the updated master sheet.
+    badge_sets_by_email = {}
+
+    for _, row in new_master.iterrows():
+        # Skip rows that are missing either the email or the badge name.
+        email = normalize_text(row.get("Issued to Email", "")).lower()
+        badge = normalize_text(row.get("Badge Name", "")).lower()
+        if not email or not badge:
+            continue
+
+        if email not in badge_sets_by_email:
+            badge_sets_by_email[email] = set()
+        badge_sets_by_email[email].add(badge)
+
+    return badge_sets_by_email
+
+
+def build_names_by_email(rows_to_append):
+    # Save names for the people who got new badges in this upload.
+    names_by_email = {}
+
+    for _, row in rows_to_append.iterrows():
+        # If someone has multiple new badges, just use the name from their first row.
+        email = normalize_text(row.get("Issued to Email", "")).lower()
+        if email and email not in names_by_email:
+            names_by_email[email] = get_recipient_name(row)
+
+    return names_by_email

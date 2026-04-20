@@ -48,6 +48,7 @@ def render_results():
         "Processing log",
         value="\n".join(st.session_state.log_lines),
         height=250,
+        disabled=True,
     )
 
     # Create a download button for the updated master sheet.
