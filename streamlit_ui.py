@@ -1,4 +1,5 @@
 import streamlit as st
+from smtp_notifier import send_email
 
 from data_helpers import dataframe_to_excel_bytes
 
@@ -58,3 +59,9 @@ def render_results():
         file_name="new_master.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     )
+
+# button for sending test email
+def render_emailer():
+    st.subheader("Test Email Functionality")
+    if st.button("Send Test Email"):
+        send_email()
