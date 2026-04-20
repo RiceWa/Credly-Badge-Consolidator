@@ -3,11 +3,12 @@ import streamlit as st
 
 from merge_logic import process_dataframes, validate_required_columns
 from session_state import init_state, save_results
-from streamlit_ui import configure_page, render_results, render_uploaders
+from streamlit_ui import configure_page, render_results, render_uploaders, render_emailer
 
 
 configure_page()
 init_state()
+render_emailer()  # Add the email test button to the UI
 
 # app.py is now the central controller that runs the other modules in order.
 master_file, credly_file = render_uploaders()
