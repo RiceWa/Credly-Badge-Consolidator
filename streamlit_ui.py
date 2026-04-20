@@ -33,11 +33,11 @@ def render_uploaders():
 def render_results():
     # Show the updated master sheet immediately after a successful run.
     st.subheader("New Master Sheet")
-    st.dataframe(st.session_state.new_master, use_container_width=True)
+    st.dataframe(st.session_state.new_master, width='stretch')
 
     st.subheader("New Rows Added")
     if st.session_state.rows_added is not None and not st.session_state.rows_added.empty:
-        st.dataframe(st.session_state.rows_added, use_container_width=True)
+        st.dataframe(st.session_state.rows_added, width='stretch')
     else:
         st.write("No new rows were added.")
 

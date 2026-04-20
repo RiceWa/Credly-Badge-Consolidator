@@ -8,6 +8,7 @@ def send_email():
     # temp hardcoded recipient email
     email_receiver = "200551990@student.georgianc.on.ca"
     email_subject = "Badge Issuance Notification"
+    # this needs to be linked to james badge message in merge_logic
     email_body = "Congratulations! Your badge has been issued successfully."
 
     msg = MIMEText(email_body)
