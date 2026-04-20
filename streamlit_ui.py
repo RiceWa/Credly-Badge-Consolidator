@@ -3,6 +3,8 @@ from smtp_notifier import send_email
 
 from data_helpers import dataframe_to_excel_bytes
 
+MILESTONE_LOG_HEADER = "Milestones and Micro-Credentials:"
+
 
 def configure_page():
     st.set_page_config(page_title="Credly Badge Consolidator", layout="wide")
@@ -52,16 +54,39 @@ def render_results():
         disabled=True,
     )
 
-    # Create a download button for the updated master sheet.
-    st.download_button(
-        "Download New Master",
-        data=excel_bytes,
-        file_name="new_master.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    )
+    # Keep the download and email buttons right next to each other at the bottom.
+    download_col, email_col, _ = st.columns([1, 1, 6])
+    with download_col:
+        st.download_button(
+            "Download New Master",
+            data=excel_bytes,
+            file_name="new_master.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
 
-# button for sending test email
-def render_emailer():
-    st.subheader("Test Email Functionality")
-    if st.button("Send Test Email"):
-        send_email()
+    with email_col:
+        render_email_button()
+
+
+def render_email_button():
+    if st.button("Send Email"):
+        email_body = build_milestone_email_body(st.session_state.log_lines)
+        if not email_body:
+            st.warning("Process files first so there is a milestone log to email.")
+            return
+
+        email_sent, error_message = send_email(email_body)
+        if email_sent:
+            st.success("Email sent successfully.")
+        else:
+            st.error(f"Error sending email: {error_message}")
+
+
+def build_milestone_email_body(log_lines):
+    # Use only the milestone and micro-credential part of the processing log.
+    if MILESTONE_LOG_HEADER not in log_lines:
+        return ""
+
+    header_index = log_lines.index(MILESTONE_LOG_HEADER)
+    milestone_lines = log_lines[header_index:]
+    return "\n".join(milestone_lines)

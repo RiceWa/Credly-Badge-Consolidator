@@ -96,9 +96,11 @@ def process_dataframes(master_df, credly_df):
     exists_in_master_mask = deduped_credly_keys.isin(set(master_keys))
     duplicates_against_master = deduped_credly.loc[exists_in_master_mask].copy()
     rows_to_append = deduped_credly.loc[~exists_in_master_mask].copy()
+    rows_to_append = sort_master_by_last_name(rows_to_append)
 
     # Append only the new and cleaned Credly rows to create the updated master sheet.
     new_master = pd.concat([cleaned_master, rows_to_append], ignore_index=True)
+    new_master = sort_master_by_last_name(new_master)
 
     result = {
         "new_master": new_master,
@@ -137,6 +139,23 @@ def get_recipient_name(row):
     if not first and not last:
         return normalize_text(row.get("Issued to Email", "Unknown User"))
     return f"{first} {last}".strip()
+
+
+def sort_master_by_last_name(new_master):
+    # Sort the updated master sheet by last name so the excel sheet is in alphabetical order.
+    if "Issued to Last Name" not in new_master.columns:
+        return new_master
+
+    sorted_master = new_master.copy()
+    sorted_master["_sort_last_name"] = (
+        sorted_master["Issued to Last Name"].apply(normalize_text).str.lower()
+    )
+    sorted_master = sorted_master.sort_values(
+        by="_sort_last_name",
+        kind="stable",
+        ignore_index=True,
+    )
+    return sorted_master.drop(columns="_sort_last_name")
 
 
 def normalize_badge_set(badges):
