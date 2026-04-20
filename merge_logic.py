@@ -1,6 +1,7 @@
 import pandas as pd
 
 from data_helpers import build_key, normalize_text
+from datetime import datetime
 
 REQUIRED_KEY_COLS = ["Badge Name", "Issued to Email"]
 
@@ -108,6 +109,7 @@ def process_dataframes(master_df, credly_df):
         "duplicates_within_credly": duplicates_within,
         "duplicates_against_master": duplicates_against_master,
         "rows_added": rows_to_append,
+        "date_processed": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
     }
     return result, None
 
