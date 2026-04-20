@@ -2,14 +2,13 @@ import streamlit as st
 import smtplib
 from email.mime.text import MIMEText
 
-def send_email():
+
+def send_email(email_body):
     email_sender = st.secrets["email"]
     email_password = st.secrets["password"]
     # temp hardcoded recipient email
     email_receiver = "200551990@student.georgianc.on.ca"
     email_subject = "Badge Issuance Notification"
-    # this needs to be linked to james badge message in merge_logic
-    email_body = "Congratulations! Your badge has been issued successfully."
 
     msg = MIMEText(email_body)
     msg['Subject'] = email_subject
@@ -23,5 +22,7 @@ def send_email():
         server.sendmail(email_sender, email_receiver, msg.as_string())
         server.quit()
         print("Email sent successfully!")
+        return True, None
     except Exception as e:
         print(f"Error sending email: {e}")
+        return False, str(e)
