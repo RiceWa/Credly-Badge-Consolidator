@@ -19,7 +19,7 @@ def build_key(df):
 
 
 # Convert the DataFrame into an in-memory Excel file for the download button.
-def dataframe_to_excel_bytes(df, sheet_name="Sheet1", date_processed="N\A"):
+def dataframe_to_excel_bytes(df, sheet_name="Sheet1", date_processed="NA"):
     output = BytesIO()
 
     # Added last updated timestamp to master list Last Updated tab
