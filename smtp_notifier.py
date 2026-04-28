@@ -3,11 +3,11 @@ import smtplib
 from email.mime.text import MIMEText
 
 
-def send_email(email_body):
+def send_email(email_body, recipient_email):
     email_sender = st.secrets["email"]
     email_password = st.secrets["password"]
-    # temp hardcoded recipient email
-    email_receiver = "200551990@student.georgianc.on.ca"
+
+    email_receiver = recipient_email
     email_subject = "Badge Issuance Notification"
 
     msg = MIMEText(email_body)

@@ -16,6 +16,7 @@ def init_state():
         "rows_added": None,
         "date_processed": None,
         "date_processed_str": None,
+        "email_input": "",
     }
     for key, value in defaults.items():
         if key not in st.session_state:

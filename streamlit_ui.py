@@ -66,6 +66,7 @@ def render_results():
 
     with email_col:
         render_email_button()
+        render_email_input()
 
 
 def render_email_button():
@@ -75,7 +76,13 @@ def render_email_button():
             st.warning("Process files first so there is a milestone log to email.")
             return
 
-        email_sent, error_message = send_email(email_body)
+        # check if email input is not empty
+        recipient_email = st.session_state.get("email_input", "").strip()
+        if not recipient_email:
+            st.warning("Please enter a recipient email address before sending.")
+            return
+
+        email_sent, error_message = send_email(email_body, recipient_email)
         if email_sent:
             st.success("Email sent successfully.")
         else:
@@ -90,3 +97,9 @@ def build_milestone_email_body(log_lines):
     header_index = log_lines.index(MILESTONE_LOG_HEADER)
     milestone_lines = log_lines[header_index:]
     return "\n".join(milestone_lines)
+
+# Adding send to text input for emailing
+def render_email_input():
+    email = st.text_input("Send Email to:", placeholder="Enter recipient's email address")
+    st.session_state["email_input"] = email
+    return email
