@@ -126,7 +126,7 @@ def build_log_lines(rows_to_append, new_master):
         name = get_recipient_name(row)
         badge = normalize_text(row.get("Badge Name", ""))
 
-        log_lines.append(f"{name} has gotten the badge: {badge}.")
+        log_lines.append(f"{name} has achieved the {badge} badge.")
 
     # Put the completion check under the normal list of badges gained.
     log_lines.extend(build_badge_completion_log(rows_to_append, new_master))
