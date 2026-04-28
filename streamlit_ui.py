@@ -60,7 +60,7 @@ def render_results():
         st.download_button(
             "Download New Master",
             data=excel_bytes,
-            file_name="new_master.xlsx",
+            file_name=f"baseline_{st.session_state.date_processed_str}.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         )
 

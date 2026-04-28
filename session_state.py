@@ -15,6 +15,7 @@ def init_state():
         "duplicates_against_master": None,
         "rows_added": None,
         "date_processed": None,
+        "date_processed_str": None,
     }
     for key, value in defaults.items():
         if key not in st.session_state:
@@ -30,3 +31,4 @@ def save_results(result):
     st.session_state.duplicates_against_master = result["duplicates_against_master"]
     st.session_state.rows_added = result["rows_added"]
     st.session_state.date_processed = result["date_processed"]
+    st.session_state.date_processed_str = result["date_processed_str"]

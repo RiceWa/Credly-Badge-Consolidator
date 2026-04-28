@@ -26,7 +26,7 @@ def dataframe_to_excel_bytes(df, sheet_name="Sheet1", date_processed="NA"):
     dfUpdated = pd.DataFrame([[date_processed]])
 
     with pd.ExcelWriter(output, engine="openpyxl") as writer:
-        df.to_excel(writer, index=False, sheet_name=sheet_name)
+        df.to_excel(writer, index=False, sheet_name="Report")
         dfUpdated.to_excel(writer, index=False, sheet_name="Last Updated", header=False)
     output.seek(0)
     return output.getvalue()

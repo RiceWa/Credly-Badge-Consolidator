@@ -110,6 +110,7 @@ def process_dataframes(master_df, credly_df):
         "duplicates_against_master": duplicates_against_master,
         "rows_added": rows_to_append,
         "date_processed": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "date_processed_str": datetime.now().strftime("%b-%d-%Y_%H-%M"),
     }
     return result, None
 
