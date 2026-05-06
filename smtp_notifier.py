@@ -3,11 +3,13 @@ import smtplib
 from email.mime.text import MIMEText
 
 
-def send_email(email_body):
+def send_email(email_body, recipient_email):
     email_sender = st.secrets["email"]
     email_password = st.secrets["password"]
-    # temp hardcoded recipient email
-    email_receiver = "200551990@student.georgianc.on.ca"
+    email_server = st.secrets["smtp_server"]
+    email_port = st.secrets["smtp_port"]
+
+    email_receiver = recipient_email
     email_subject = "Badge Issuance Notification"
 
     msg = MIMEText(email_body)
@@ -16,7 +18,7 @@ def send_email(email_body):
     msg['To'] = email_receiver
 
     try:
-        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server = smtplib.SMTP(email_server, email_port)
         server.starttls()
         server.login(email_sender, email_password)
         server.sendmail(email_sender, email_receiver, msg.as_string())

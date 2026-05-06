@@ -1,4 +1,5 @@
 import streamlit as st
+import re
 from smtp_notifier import send_email
 
 from data_helpers import dataframe_to_excel_bytes
@@ -55,17 +56,19 @@ def render_results():
     )
 
     # Keep the download and email buttons right next to each other at the bottom.
-    download_col, email_col, _ = st.columns([1, 1, 6])
+    download_col, email_col, input_col, _ = st.columns([1, 1, 3, 3])
     with download_col:
         st.download_button(
             "Download New Master",
             data=excel_bytes,
-            file_name="new_master.xlsx",
+            file_name=f"baseline_{st.session_state.date_processed_str}.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         )
 
     with email_col:
         render_email_button()
+    with input_col:
+        render_email_input()
 
 
 def render_email_button():
@@ -75,7 +78,18 @@ def render_email_button():
             st.warning("Process files first so there is a milestone log to email.")
             return
 
-        email_sent, error_message = send_email(email_body)
+        # check if email input is not empty
+        recipient_email = st.session_state.get("email_input", "").strip()
+        if not recipient_email:
+            st.warning("Please enter a recipient email address before sending.")
+            return
+
+        # check for valid email format (basic check) using this regex \b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b, case insensitive
+        if not re.match(r'^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$', recipient_email, re.IGNORECASE):
+            st.warning("Please enter a valid email address.")
+            return
+
+        email_sent, error_message = send_email(email_body, recipient_email)
         if email_sent:
             st.success("Email sent successfully.")
         else:
@@ -90,3 +104,9 @@ def build_milestone_email_body(log_lines):
     header_index = log_lines.index(MILESTONE_LOG_HEADER)
     milestone_lines = log_lines[header_index:]
     return "\n".join(milestone_lines)
+
+# Adding send to text input for emailing
+def render_email_input():
+    email = st.text_input("Send Email to:", placeholder="Enter recipient's email address")
+    st.session_state["email_input"] = email
+    return email
