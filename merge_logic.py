@@ -2,6 +2,7 @@ import pandas as pd
 
 from data_helpers import build_key, normalize_text
 from datetime import datetime
+from pytz import timezone
 
 REQUIRED_KEY_COLS = ["Badge Name", "Issued to Email"]
 
@@ -103,14 +104,17 @@ def process_dataframes(master_df, credly_df):
     new_master = pd.concat([cleaned_master, rows_to_append], ignore_index=True)
     new_master = sort_master_by_last_name(new_master)
 
+    # Define Timezone
+    tz = timezone('Canada/Eastern')
+
     result = {
         "new_master": new_master,
         "log_lines": build_log_lines(rows_to_append, new_master),
         "duplicates_within_credly": duplicates_within,
         "duplicates_against_master": duplicates_against_master,
         "rows_added": rows_to_append,
-        "date_processed": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "date_processed_str": datetime.now().strftime("%b-%d-%Y_%H-%M"),
+        "date_processed": datetime.now(tz).strftime("%Y-%m-%d %H:%M:%S"),
+        "date_processed_str": datetime.now(tz).strftime("%b-%d-%Y_%H-%M"),
     }
     return result, None
 
