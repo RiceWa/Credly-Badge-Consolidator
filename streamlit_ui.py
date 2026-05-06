@@ -18,7 +18,7 @@ def render_uploaders():
 
     with col1:
         master_file = st.file_uploader(
-            "Browse Master Sheet",
+            "Browse Baseline Sheet",
             type=["xlsx", "xls"],
             key="master_file",
         )
@@ -34,8 +34,8 @@ def render_uploaders():
 
 
 def render_results():
-    # Show the updated master sheet immediately after a successful run.
-    st.subheader("New Master Sheet")
+    # Show the updated baseline sheet immediately after a successful run.
+    st.subheader("New Baseline Sheet")
     st.dataframe(st.session_state.new_master, width='stretch')
 
     st.subheader("New Rows Added")
@@ -44,7 +44,7 @@ def render_results():
     else:
         st.write("No new rows were added.")
 
-    # Prepare the updated master sheet as an Excel download.
+    # Prepare the updated baseline sheet as an Excel download.
     excel_bytes = dataframe_to_excel_bytes(st.session_state.new_master, sheet_name="Master", date_processed=st.session_state.date_processed)
 
     st.subheader("Update Log")
@@ -59,7 +59,7 @@ def render_results():
     download_col, email_col, input_col, _ = st.columns([1, 1, 3, 3])
     with download_col:
         st.download_button(
-            "Download New Master",
+            "Download New Baseline",
             data=excel_bytes,
             file_name=f"baseline_{st.session_state.date_processed_str}.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
